@@ -1,7 +1,8 @@
 import requests
 import json
 from docx import Document
-
+import re
+import html
 
 def load_cookies():
     with open("config.json","r",encoding="utf-8") as f:
@@ -32,14 +33,23 @@ for i in range(1, max_page + 1):
     for post in data['result']:
         content = str(post['content'])
 
-        content = content.replace("<div class='dice'>","").replace("</div>","").replace("<b>","").replace("</b>","")
+        # 删除html标签
+        # content = content.replace("<div class='dice'>","").replace("</div>","").replace("<b>","").replace("</b>","")
+        content = content.replace("<br/>","\n")
+        content = re.sub('<[^<]+?>', '', content)
+        content = html.unescape(content)
+
+        # 替换unicode字符
+        def subchr(s):
+            return chr(int(s.group(1)))
+        content = re.sub('&#([0-9]+);',subchr,content)
 
         # 跳过回复楼层
         if content.__contains__("Reply to"):
             continue
 
         # 检测重复d2
-        content_list = content.split("<br/>")
+        content_list = content.split("\n")
         # ROLL : d10
         # ROLL : d2
         for i in range(0, len(content_list) - 1):
@@ -56,4 +66,4 @@ for i in range(1, max_page + 1):
             
         document.add_paragraph(fin_content)
 
-document.save("backup_20240907_noUselessD2.docx")
+document.save("backup_20240907_noHtmlTags.docx")
