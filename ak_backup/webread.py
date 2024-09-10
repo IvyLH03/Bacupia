@@ -7,9 +7,8 @@ import html
 import time
 from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt
-
-class Post:
-    x:int
+from zoneinfo import ZoneInfo
+import datetime
 
 class SaveThread:
     def __init__(self, tid: int, authorid: int):
@@ -59,18 +58,15 @@ class SaveThread:
     # 处理一条回复的文字部分, 生成用于排版的纯文字
     def process_post_content_minimal(self, content: str) -> str:
         # 删除html标签
-        content = content.replace("<br/>","\n")
-        content = re.sub('<[^<]+?>', '', content)
-        content = html.unescape(content)
+        content = self.reduce_html(content)
+
+        # 删除特定方括号标签
+        content = self.reduce_square_labels(content)
 
         # 跳过回复楼层
-        if content.__contains__("Reply to"):
+        if content.__contains__("Reply to") or content.__contains__("Reply[/pid] Post by "):
+            #print("reply skipped")
             return ""
-
-        # 替换unicode字符
-        def subchr(s):
-            return chr(int(s.group(1)))
-        content = re.sub('&#([0-9]+);',subchr,content)
 
         # 检测重复d2
         content_list = content.split("\n")
@@ -89,11 +85,23 @@ class SaveThread:
             if len(content_list[i]) > 0:
                 content += content_list[i] + "\n"
 
-        return content #.strip()
+        return content.strip()
     
-    # 处理一条回复的文字部分，生成阅读格式
-    def add_post_to_doc_reading(self, post:Post, ref):
-        print("TODO")
+    # 根据html换行符切割帖子内容并保留换行符
+    def split_content_keep_newline(self, content:str) -> List[str]:
+        return re.split('(<br/>)', content)
+    
+    # 从已有数据文件生成文档
+    def run_save_from_json(self, thread_name:str, json_path:str, save_minimal=True, save_reading=True):
+        time_suffix = time.strftime("%Y%m%d_%H%M%S")
+        with open(json_path) as f:
+            posts = json.load(f)
+        if save_minimal:
+            filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            self.save_minimal(posts, filename)
+        if save_reading:
+            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            self.save_reading(posts, filename)
 
     # 生成文档
     def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True):
@@ -103,10 +111,11 @@ class SaveThread:
             filename = thread_name + "_raw_" + time_suffix + ".json"
             self.save_raw(posts, filename)
         if save_minimal:
-            filename = thread_name + "_minimal_" + time_suffix + ".docx"
+            filename = thread_name + "_无格式_" + time_suffix + ".docx"
             self.save_minimal(posts, filename)
         if save_reading:
-            print("TODO")
+            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            self.save_reading(posts, filename)
     
     # 保存所有回帖的json数据文件
     def save_raw(self, posts:List[object], filename:str):
@@ -123,25 +132,97 @@ class SaveThread:
         style = document.styles.add_style('ThreadMinimal', WD_STYLE_TYPE.PARAGRAPH)
         paragraph_format = style.paragraph_format
         paragraph_format.space_after = Pt(0)
+
         for post in posts:
             content = self.process_post_content_minimal(str(post['content']))
             if len(content) > 0:
                 paragraph = document.add_paragraph(content)
                 paragraph.style = document.styles['ThreadMinimal']
+        
         document.save(filename)
         print("minimal saved!")
 
     # 保存所有回帖的阅读格式文档
     def save_reading(self, posts:List[object], filename:str):
         print("saving reading to", filename, "...")
-        # TODO: GET THIS DONE
+        document = Document()
+        style = document.styles.add_style('ThreadMinimal', WD_STYLE_TYPE.PARAGRAPH)
+        paragraph_format = style.paragraph_format
+        paragraph_format.space_after = Pt(0)
+
+
+        for post in posts:
+            # print('Saving #',post['lou'])
+            paragraph = document.add_paragraph()
+            run = paragraph.add_run("#" + str(post['lou']) + " [" + post_time_formatted(post['postdatetimestamp']) + "]\n")
+            run.add_break()
+            paragraph.style = document.styles['ThreadMinimal']
+
+            content_list = self.split_content_keep_newline(post['content'])
+            # print(content_list)
+
+            for raw_content in content_list:
+                content = self.reduce_html(raw_content)
+                content = self.reduce_square_labels(content)
+                is_dice_block = self.check_dice_block(raw_content)
+
+                if(content == '\n'):
+                    run.add_break()
+
+                elif(is_dice_block):
+                    run = paragraph.add_run(content)
+                    run.bold = True
+                    run = paragraph.add_run()
+                else:
+                    run.add_text(content)
+
+
+            # TODO: detect other styles
+            # TODO: detect styles within one line
+            run.add_break()
+            run.add_break()
+        document.save(filename)
+        print("reading saved!")
+
+            
+
+
+    # 去除html代码
+    def reduce_html(self, content: str) -> str:
+        # 变更换行符
+        content = content.replace("<br/>","\n")
+
+        # html tags
+        content = re.sub('<[^<]+?>', '', content)
+
+        # html entities
+        content = html.unescape(content)
+
+        # 替换unicode
+        def subchr(s):
+            return chr(int(s.group(1)))
+        content = re.sub('&#([0-9]+);',subchr,content)
+        return content
+    
+    # 删除特定方括号标签
+    def reduce_square_labels(self, content:str) -> str:
+        labels = ['[i]','[/i]','[color=red]', '[/color]']
+        for label in labels:
+            content = content.replace(label, '')
+        return content
+
+    # 检测是否是骰点块
+    def check_dice_block(self, content: str) -> bool:
+        return content.startswith('<div class=\'dice\'>')
+        return re.match('<div class=\'dice\'>(.)+</div>', content) != None
+
+
+def post_time_formatted(tstamp:int) -> str:
+    target_timezone = ZoneInfo("Asia/Shanghai")
+    return datetime.datetime.fromtimestamp(tstamp).astimezone(target_timezone).strftime("%Y-%m-%d %H:%M:%S")
 
 if __name__ == "__main__":
     saver = SaveThread(40452148, 64875447)
     thread_name = "./out/百命海猎"
-    # saver.run_save(thread_name=thread_name, save_raw=True, save_minimal=False, save_reading=False)
-    with open("./out/百命海猎_raw_20240909_131332.json") as f:
-        posts = json.load(f)
-    time_suffix = time.strftime("%Y%m%d_%H%M%S")
-    filename = thread_name + "_minimal_" + time_suffix + ".docx"
-    saver.save_minimal(posts, filename)
+    # saver.run_save(thread_name=thread_name)
+    saver.run_save_from_json(thread_name=thread_name, json_path='./out/百命海猎_raw_20240909_201541.json')
