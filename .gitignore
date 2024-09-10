@@ -1,5 +1,5 @@
 .venv
-*.docx
 config.json
 out
 .DS_Store
+__pycache__

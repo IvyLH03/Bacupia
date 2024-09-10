@@ -7,7 +7,8 @@ try:
   cookies['ngaPassportCid'] = os.environ['ngaPassportCid']
   cookies['ngaPassportUid'] = os.environ['ngaPassportUid']
 except KeyError as e:
-  print(e)
+  with open('config.json') as f:
+    cookies=json.load(f)
 
 saver = SaveThread(40452148, 64875447, cookies)
-saver.run_save("百命海猎/百命海猎")
+saver.run_save("./saves/百命海猎")

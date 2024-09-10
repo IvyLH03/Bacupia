@@ -13,13 +13,15 @@ import datetime
 class SaveThread:
     def __init__(self, tid: int, authorid: int, cookies):
         self.tid = tid
-        self.authorid = authorid
-        self.max_page = self.get_thread_pgnum()
+
         self.client = requests.session()
         self.client.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
         }
         self.client.cookies.update(cookies)
+
+        self.authorid = authorid
+        self.max_page = self.get_thread_pgnum()
 
     # 获取一页帖子的json
     def get_page(self, pgnum: int):
