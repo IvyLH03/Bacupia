@@ -11,21 +11,15 @@ from zoneinfo import ZoneInfo
 import datetime
 
 class SaveThread:
-    def __init__(self, tid: int, authorid: int):
+    def __init__(self, tid: int, authorid: int, cookies):
         self.tid = tid
         self.authorid = authorid
         self.max_page = self.get_thread_pgnum()
-
-    def load_cookies():
-        with open("config.json","r",encoding="utf-8") as f:
-            return json.load(f)
-
-    client = requests.session()
-    client.headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
-    }
-    client.cookies.update(load_cookies())
-
+        client = requests.session()
+        client.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+        }
+        client.cookies.update(cookies)
 
     # 获取一页帖子的json
     def get_page(self, pgnum: int):
@@ -91,31 +85,6 @@ class SaveThread:
     def split_content_keep_newline(self, content:str) -> List[str]:
         return re.split('(<br/>)', content)
     
-    # 从已有数据文件生成文档
-    def run_save_from_json(self, thread_name:str, json_path:str, save_minimal=True, save_reading=True):
-        time_suffix = time.strftime("%Y%m%d_%H%M%S")
-        with open(json_path) as f:
-            posts = json.load(f)
-        if save_minimal:
-            filename = thread_name + "_无格式_" + time_suffix + ".docx"
-            self.save_minimal(posts, filename)
-        if save_reading:
-            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
-            self.save_reading(posts, filename)
-
-    # 生成文档
-    def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True):
-        posts = self.get_thread_posts()
-        time_suffix = time.strftime("%Y%m%d_%H%M%S")
-        if save_raw:
-            filename = thread_name + "_raw_" + time_suffix + ".json"
-            self.save_raw(posts, filename)
-        if save_minimal:
-            filename = thread_name + "_无格式_" + time_suffix + ".docx"
-            self.save_minimal(posts, filename)
-        if save_reading:
-            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
-            self.save_reading(posts, filename)
     
     # 保存所有回帖的json数据文件
     def save_raw(self, posts:List[object], filename:str):
@@ -215,6 +184,33 @@ class SaveThread:
     def check_dice_block(self, content: str) -> bool:
         return content.startswith('<div class=\'dice\'>')
         return re.match('<div class=\'dice\'>(.)+</div>', content) != None
+    
+    # 从已有数据文件生成文档
+    def run_save_from_json(self, thread_name:str, json_path:str, save_minimal=True, save_reading=True):
+        time_suffix = time.strftime("%Y%m%d_%H%M%S")
+        with open(json_path) as f:
+            posts = json.load(f)
+        if save_minimal:
+            filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            self.save_minimal(posts, filename)
+        if save_reading:
+            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            self.save_reading(posts, filename)
+
+    # 生成文档
+    def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True):
+        posts = self.get_thread_posts()
+        time_suffix = time.strftime("%Y%m%d_%H%M%S")
+        if save_raw:
+            filename = thread_name + "_raw_" + time_suffix + ".json"
+            self.save_raw(posts, filename)
+        if save_minimal:
+            filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            self.save_minimal(posts, filename)
+        if save_reading:
+            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            self.save_reading(posts, filename)
+
 
 
 def post_time_formatted(tstamp:int) -> str:
@@ -224,5 +220,5 @@ def post_time_formatted(tstamp:int) -> str:
 if __name__ == "__main__":
     saver = SaveThread(40452148, 64875447)
     thread_name = "./out/百命海猎"
-    # saver.run_save(thread_name=thread_name)
-    saver.run_save_from_json(thread_name=thread_name, json_path='./out/百命海猎_raw_20240909_201541.json')
+    saver.run_save(thread_name=thread_name)
+    # saver.run_save_from_json(thread_name=thread_name, json_path='./out/百命海猎_raw_20240909_201541.json')
