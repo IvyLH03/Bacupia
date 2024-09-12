@@ -9,6 +9,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt
 from zoneinfo import ZoneInfo
 import datetime
+import copy
 
 class SaveThread:
     def __init__(self, tid: int, authorid: int, cookies):
@@ -87,6 +88,9 @@ class SaveThread:
     def split_content_keep_newline(self, content:str) -> List[str]:
         return re.split('(<br/>)', content)
     
+    def split_content(self, content:str) -> List[str]:
+        return content.split('<br/>')
+    
     
     # 保存所有回帖的json数据文件
     def save_raw(self, posts:List[object], filename:str):
@@ -94,6 +98,34 @@ class SaveThread:
         with open(filename,"w",encoding="utf-8") as f:
             json.dump(posts, f)
         print("raw saved!")
+
+    # 保存经过字符串处理的json数据文件
+    def save_processed(self, posts:List[object], filename:str):
+        print("processing post string contents...")
+        post_processed = []
+
+        for post in posts:
+            content = str(post['content'])
+            content = self.reduce_html(content)
+            content = self.reduce_square_labels(content)
+
+             # 检测重复d2
+            content_list = content.split("\n")
+            # ROLL : d10
+            # ROLL : d2
+            for i in range(0, len(content_list) - 1):
+                prev_item = content_list[i]
+                cur_item = content_list[i+1]
+                # 如果第i条是d10且出目不是10，同时第i+1条是d2，则删除d2
+                if prev_item.startswith("ROLL : d10") and cur_item.startswith("ROLL : d2") and (not prev_item.startswith("ROLL : d10=d10(10)=10")):
+                    content_list[i+1] = ""
+
+
+            post_processed.append({'lou':post['lou'], 'content':content_list})
+
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(post_processed, f)
+        
 
             
     # 保存所有回帖的排版文档
@@ -220,7 +252,11 @@ def post_time_formatted(tstamp:int) -> str:
     return datetime.datetime.fromtimestamp(tstamp).astimezone(target_timezone).strftime("%Y-%m-%d %H:%M:%S")
 
 if __name__ == "__main__":
-    saver = SaveThread(40452148, 64875447)
-    thread_name = "./out/百命海猎"
-    saver.run_save(thread_name=thread_name)
-    # saver.run_save_from_json(thread_name=thread_name, json_path='./out/百命海猎_raw_20240909_201541.json')
+    with open('config.json') as f:
+        cookies=json.load(f)
+    saver = SaveThread(40452148, 64875447, cookies)
+    file_name = "./out/processed_test_0.json"
+    #saver.run_save(thread_name=thread_name)
+    with open('./out/百命海猎_raw_20240909_201541.json') as f:
+        posts = json.load(f)
+    saver.save_processed(posts, file_name)
