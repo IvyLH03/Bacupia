@@ -3,3 +3,7 @@ config.json
 out
 .DS_Store
 __pycache__
+*.png
+词云.doc
+out_sep.txt
+out.txt
