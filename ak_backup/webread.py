@@ -257,6 +257,6 @@ if __name__ == "__main__":
     saver = SaveThread(40452148, 64875447, cookies)
     file_name = "./out/processed_test_0.json"
     #saver.run_save(thread_name=thread_name)
-    with open('./out/百命海猎_raw_20240909_201541.json') as f:
+    with open('saves/百命海猎_raw_20240924_124555.json') as f:
         posts = json.load(f)
     saver.save_processed(posts, file_name)
