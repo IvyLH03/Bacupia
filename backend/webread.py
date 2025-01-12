@@ -12,7 +12,7 @@ import datetime
 import copy
 
 class SaveThread:
-    def __init__(self, tid: int, authorid: int, cookies):
+    def __init__(self, tid: int, cookies):
         self.tid = tid
 
         self.client = requests.session()
@@ -21,8 +21,14 @@ class SaveThread:
         }
         self.client.cookies.update(cookies)
 
-        self.authorid = authorid
+        res = self.client.post("https://bbs.nga.cn/app_api.php?__lib=post&__act=list", {
+            "tid":self.tid,
+            "page":1,
+        })
+        data = res.json()
+        self.authorid = data['result'][0]['author']['uid']
         self.max_page = self.get_thread_pgnum()
+
 
     # 获取一页帖子的json
     def get_page(self, pgnum: int):
@@ -232,17 +238,21 @@ class SaveThread:
             self.save_reading(posts, filename)
 
     # 生成文档
-    def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True):
+    def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True, simple_filename=False):
         posts = self.get_thread_posts()
         time_suffix = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{thread_name}.docx"
         if save_raw:
-            filename = thread_name + "_raw_" + time_suffix + ".json"
+            if not simple_filename:
+                filename = thread_name + "_raw_" + time_suffix + ".json"
             self.save_raw(posts, filename)
         if save_minimal:
-            filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            if not simple_filename:
+                filename = thread_name + "_无格式_" + time_suffix + ".docx"
             self.save_minimal(posts, filename)
         if save_reading:
-            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            if not simple_filename:
+                filename = thread_name + "_阅读版_" + time_suffix + ".docx"
             self.save_reading(posts, filename)
 
 
@@ -254,9 +264,9 @@ def post_time_formatted(tstamp:int) -> str:
 if __name__ == "__main__":
     with open('config.json') as f:
         cookies=json.load(f)
-    saver = SaveThread(40452148, 64875447, cookies)
+    saver = SaveThread(40452148, cookies)
     file_name = "./out/processed_test_0.json"
     #saver.run_save(thread_name=thread_name)
     with open('saves/百命海猎_raw_20240924_124555.json') as f:
         posts = json.load(f)
-    saver.save_processed(posts, file_name)
+    # saver.save_processed(posts, file_name)
