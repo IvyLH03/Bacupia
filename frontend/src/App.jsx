@@ -1,7 +1,7 @@
 import { Button, Container, createTheme, TextField, ThemeProvider } from '@mui/material'
 import './App.css'
 import ButtonUsage from './buttonUsage'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function getUrlParam(url, paramName) {
   // Create a URL object
@@ -32,15 +32,17 @@ function App() {
   const handleDownload = (tid) => {
     setIsLoading(true)
     fetch(`http://api.ivylh03.net:5000/bacupia/${tid}`)
-    .then( res => res.blob() )
-    .then( blob => {
-      let file = window.URL.createObjectURL(blob);
-      window.location.assign(file);
-    })
-    .then(
-      setIsLoading(false)
-    )
+      .then( res => res.blob() )
+      .then( blob => {
+        let file = window.URL.createObjectURL(blob);
+        window.location.assign(file);
+        setIsLoading(false)
+      })
   }
+
+  useEffect(() => {
+    console.log("Loading state changed:", isLoading);
+  }, [isLoading]);
 
   return (
     <ThemeProvider theme={theme}>
