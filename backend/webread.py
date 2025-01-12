@@ -73,14 +73,14 @@ class SaveThread:
 
         # 检测重复d2
         content_list = content.split("\n")
-        # ROLL : d10
-        # ROLL : d2
-        for i in range(0, len(content_list) - 1):
-            prev_item = content_list[i]
-            cur_item = content_list[i+1]
-            # 如果第i条是d10且出目不是10，同时第i+1条是d2，则删除d2
-            if prev_item.startswith("ROLL : d10") and cur_item.startswith("ROLL : d2") and (not prev_item.startswith("ROLL : d10=d10(10)=10")):
-                content_list[i+1] = ""
+        # # ROLL : d10
+        # # ROLL : d2
+        # for i in range(0, len(content_list) - 1):
+        #     prev_item = content_list[i]
+        #     cur_item = content_list[i+1]
+        #     # 如果第i条是d10且出目不是10，同时第i+1条是d2，则删除d2
+        #     if prev_item.startswith("ROLL : d10") and cur_item.startswith("ROLL : d2") and (not prev_item.startswith("ROLL : d10=d10(10)=10")):
+        #         content_list[i+1] = ""
 
         # 重新组合结果
         content = ""
