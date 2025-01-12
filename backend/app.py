@@ -1,8 +1,10 @@
 from flask import Flask, send_from_directory
 from webread import SaveThread
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/bacupia/<int:post_id>')
 def show_post(post_id):
