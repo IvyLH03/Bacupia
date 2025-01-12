@@ -11,7 +11,7 @@ CORS(app)
 @app.route('/bacupia/<int:post_id>')
 def show_post(post_id):
     request_time = time.time()
-    app.logging.info(f'get file | ip: {request.remote_addr} | post_id: {post_id} | {request_time} |')
+    app.logger.info(f'get file | ip: {request.remote_addr} | post_id: {post_id} | {request_time} |')
     try: 
         with open('config.json') as f:
             cookies=json.load(f)
