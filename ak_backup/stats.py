@@ -46,7 +46,6 @@ class Stats:
           word_freq[seg] = 0
         word_freq[seg] += 1
     return word_freq
-  
 
 
   def get_interval_freq(self, start:int, end:int, skips = [], ignore_words = [], ignore_num=False, ignore_d=False) -> dict:
@@ -108,32 +107,34 @@ if __name__ == "__main__":
   stats.load_data("./out/processed_test_0.json")
 
   
-  index = 0
-  for iter in iters:
-    print(iter)
-    word_freq = stats.get_interval_freq(iter[0], iter[1], skips=skip, ignore_words=ignores, ignore_num=True, ignore_d=True)
-    word_freq_sorted = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
-    j = 0
-    for i in word_freq_sorted:
-      j += 1
-      if(j > 500) or word_freq_sorted[i] == 3:
-        break 
-      print(i, word_freq_sorted[i])
+  def save_word_clouds(self):
+    index = 0
+    for iter in iters:
+      print(iter)
+      word_freq = stats.get_interval_freq(iter[0], iter[1], skips=skip, ignore_words=ignores, ignore_num=True, ignore_d=True)
+      word_freq_sorted = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
+      j = 0
+      for i in word_freq_sorted:
+        j += 1
+        if(j > 500) or word_freq_sorted[i] == 3:
+          break 
+        print(i, word_freq_sorted[i])
 
-    index+=1
-    wordcloud_title = "wordcloud_"+str(index)+".png"
-    
-    wordcloud = WordCloud(font_path="FangZhengHeiTiJianTi-1.ttf",width = 800, height = 800, max_words=50).generate_from_frequencies(word_freq_sorted)
+      index+=1
+      wordcloud_title = "wordcloud_"+str(index)+".png"
+      
+      wordcloud = WordCloud(font_path="FangZhengHeiTiJianTi-1.ttf",width = 800, height = 800, max_words=50).generate_from_frequencies(word_freq_sorted)
 
-    plt.figure(figsize = (8, 8), facecolor = None)
-    plt.imshow(wordcloud)
-    plt.axis("off")
-    plt.tight_layout(pad = 0)
-    
-    
-    #plt.show()
-    plt.savefig(wordcloud_title)
+      plt.figure(figsize = (8, 8), facecolor = None)
+      plt.imshow(wordcloud)
+      plt.axis("off")
+      plt.tight_layout(pad = 0)
+      
+      
+      #plt.show()
+      plt.savefig(wordcloud_title)
 
+  
     
   # dices = []
 
