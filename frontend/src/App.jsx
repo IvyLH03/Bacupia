@@ -1,34 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Button, Container, createTheme, TextField, ThemeProvider } from '@mui/material'
 import './App.css'
+import ButtonUsage from './buttonUsage'
+import { useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [link, setLink] = useState("")
+  const theme = createTheme({
+    colorSchemes: {
+      dark: true,
+    },
+  });
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ThemeProvider theme={theme}>
+      <Container>
+        <h1>Bacupia - NGA 安科备份</h1>
+        <TextField label="安科链接" variant="outlined" sx={{width:"300"}} value={link} onChange={event=>{setLink(event.target.value)}}/>
+        <br/><br/>
+        <Button>生成备份</Button>
+      </Container>
+    </ThemeProvider>
   )
 }
 
