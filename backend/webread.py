@@ -10,8 +10,10 @@ from docx.shared import Pt
 from zoneinfo import ZoneInfo
 import datetime
 import copy
+import re
 
 class SaveThread:
+
     def __init__(self, tid: int, cookies):
         self.tid = tid
 
@@ -27,8 +29,22 @@ class SaveThread:
         })
         data = res.json()
         self.authorid = data['result'][0]['author']['uid']
-        self.max_page = self.get_thread_pgnum()
+        self.max_page = data['totalPage']
+        self.tsubject = data['tsubject']
+        self.filename = self.sanitize_filename(self.tsubject)[:200]
 
+
+
+    # remove invalid characters from the filename 
+    def sanitize_filename(self, filename, replacement="_"):
+        # Define invalid characters for most file systems
+        invalid_chars = r'[<>:"/\\|?*]'
+        # Replace invalid characters with the replacement character
+        sanitized = re.sub(invalid_chars, replacement, filename)
+        # Remove leading/trailing spaces and dots (common issues in Windows)
+        sanitized = sanitized.strip(" .")
+        return sanitized
+    
 
     # 获取一页帖子的json
     def get_page(self, pgnum: int):
@@ -238,22 +254,21 @@ class SaveThread:
             self.save_reading(posts, filename)
 
     # 生成文档
-    def run_save(self, thread_name:str, save_raw=True, save_minimal=True, save_reading=True, simple_filename=False):
+    def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
         posts = self.get_thread_posts()
-        time_suffix = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{thread_name}.docx"
+        time_suffix = time.strftime("%Y-%m-%d_%H-%M")
         if save_raw:
-            if not simple_filename:
-                filename = thread_name + "_raw_" + time_suffix + ".json"
+            filename = f"{self.filename}_raw_{time_suffix}.json"
             self.save_raw(posts, filename)
         if save_minimal:
-            if not simple_filename:
-                filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            filename = f"{self.filename}_minimal_{time_suffix}.docx"
             self.save_minimal(posts, filename)
         if save_reading:
-            if not simple_filename:
-                filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            filename = f"{self.filename}_reading_{time_suffix}.docx"
             self.save_reading(posts, filename)
+
+
+
 
 
 
@@ -267,6 +282,6 @@ if __name__ == "__main__":
     saver = SaveThread(40452148, cookies)
     file_name = "./out/processed_test_0.json"
     #saver.run_save(thread_name=thread_name)
-    with open('saves/百命海猎_raw_20240924_124555.json') as f:
-        posts = json.load(f)
+    # with open('saves/百命海猎_raw_20240924_124555.json') as f:
+    #     posts = json.load(f)
     # saver.save_processed(posts, file_name)
