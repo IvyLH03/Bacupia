@@ -242,15 +242,15 @@ class SaveThread:
         return re.match('<div class=\'dice\'>(.)+</div>', content) != None
     
     # 从已有数据文件生成文档
-    def run_save_from_json(self, thread_name:str, json_path:str, save_minimal=True, save_reading=True):
-        time_suffix = time.strftime("%Y%m%d_%H%M%S")
+    def run_save_from_json(self, json_path:str, save_minimal=True, save_reading=True):
+        time_suffix = time.strftime("%Y-%m-%d_%H-%M")
         with open(json_path) as f:
             posts = json.load(f)
         if save_minimal:
-            filename = thread_name + "_无格式_" + time_suffix + ".docx"
+            filename = f"{self.filename}_minimal_{time_suffix}.docx"
             self.save_minimal(posts, filename)
         if save_reading:
-            filename = thread_name + "_阅读版_" + time_suffix + ".docx"
+            filename = f"{self.filename}_reading_{time_suffix}.docx"
             self.save_reading(posts, filename)
 
     # 生成文档
