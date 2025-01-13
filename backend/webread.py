@@ -257,15 +257,21 @@ class SaveThread:
     def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
         posts = self.get_thread_posts()
         time_suffix = time.strftime("%Y-%m-%d_%H-%M")
+        generated_files = []
         if save_raw:
             filename = f"{self.filename}_raw_{time_suffix}.json"
             self.save_raw(posts, filename)
+            generated_files.append(filename)
         if save_minimal:
             filename = f"{self.filename}_minimal_{time_suffix}.docx"
             self.save_minimal(posts, filename)
+            generated_files.append(filename)
         if save_reading:
             filename = f"{self.filename}_reading_{time_suffix}.docx"
             self.save_reading(posts, filename)
+            generated_files.append(filename)
+        return generated_files
+
 
 
 
@@ -280,8 +286,8 @@ if __name__ == "__main__":
     with open('config.json') as f:
         cookies=json.load(f)
     saver = SaveThread(40452148, cookies)
-    file_name = "./out/processed_test_0.json"
-    #saver.run_save(thread_name=thread_name)
+    # file_name = "./out/processed_test_0.json"
+    saver.run_save()
     # with open('saves/百命海猎_raw_20240924_124555.json') as f:
     #     posts = json.load(f)
     # saver.save_processed(posts, file_name)
