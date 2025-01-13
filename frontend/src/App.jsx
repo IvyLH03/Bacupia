@@ -31,7 +31,7 @@ function App() {
 
   const handleDownload = (tid) => {
     setIsLoading(true)
-    fetch(`http://api.ivylh03.net:5000/bacupia/${tid}`)
+    fetch(`http://api.ivylh03.net/bacupia/${tid}`)
       .then( res => res.blob() )
       .then( blob => {
         let file = window.URL.createObjectURL(blob);
