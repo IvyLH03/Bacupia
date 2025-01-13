@@ -53,7 +53,7 @@ class SaveThread:
         pgnum = self.get_thread_pgnum()
         posts = []
         for i in range(1, self.max_page + 1):
-            print("fetching posts from page", i, "/", self.max_page, "...")
+            # print("fetching posts from page", i, "/", self.max_page, "...")
             posts += (self.get_page_posts(i))
         return posts
             
