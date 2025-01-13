@@ -8,6 +8,10 @@ import time
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def hello():
+    return "hello!" 
+
 @app.route('/bacupia/<int:post_id>')
 def show_post(post_id):
     request_time = time.time()
