@@ -7,6 +7,7 @@ from flask import request
 import time
 from pathlib import Path
 import os
+import asyncio
 
 app = Flask(__name__)
 CORS(app)
@@ -16,15 +17,18 @@ def hello():
     return "hello!" 
 
 @app.route('/bacupia/request/<int:post_id>')
-def request_backup(post_id):
+async def request_backup(post_id):
     request_time = time.time()
     app.logger.info(f'get file | post_id: {post_id} | {request_time} |')
     try: 
         with open('config.json') as f:
             cookies=json.load(f)
-        saver = SaveThread(post_id, cookies)
+
+        saver = SaveThread(post_id, cookies, debug=True)
         
-        generated_filenames = saver.run_save(save_raw=False, save_minimal=False, simple_filename=True)
+        # run in background
+        asyncio.create_task(saver.run_save(save_raw=False, save_minimal=False))
+
         app.logger.info(f'SUCCESS: get file | post_id: {post_id} | {request_time} |')
         # return send_from_directory(
         #     "./saves", generated_filenames[0], as_attachment=True
@@ -33,6 +37,7 @@ def request_backup(post_id):
     
     except Exception as err:
         app.logger.info(f'FAILED: get file | post_id: {post_id} | {request_time} |')
+        print(err)
         
     
 # return all files in save folder

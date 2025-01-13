@@ -11,10 +11,11 @@ from zoneinfo import ZoneInfo
 import datetime
 import copy
 import re
+import asyncio
 
 class SaveThread:
 
-    def __init__(self, tid: int, cookies):
+    def __init__(self, tid: int, cookies, debug=False, detect_d2s=False):
         self.tid = tid
 
         self.client = requests.session()
@@ -32,6 +33,9 @@ class SaveThread:
         self.max_page = data['totalPage']
         self.tsubject = data['tsubject']
         self.filename = self.sanitize_filename(self.tsubject)[:200]
+
+        self.debug = debug
+        self.detect_d2s = debug
 
 
 
@@ -69,7 +73,8 @@ class SaveThread:
         pgnum = self.get_thread_pgnum()
         posts = []
         for i in range(1, self.max_page + 1):
-            # print("fetching posts from page", i, "/", self.max_page, "...")
+            if(self.debug):
+                print("fetching posts from page", i, "/", self.max_page, "...")
             posts += (self.get_page_posts(i))
         return posts
             
@@ -89,14 +94,15 @@ class SaveThread:
 
         # 检测重复d2
         content_list = content.split("\n")
-        # # ROLL : d10
-        # # ROLL : d2
-        # for i in range(0, len(content_list) - 1):
-        #     prev_item = content_list[i]
-        #     cur_item = content_list[i+1]
-        #     # 如果第i条是d10且出目不是10，同时第i+1条是d2，则删除d2
-        #     if prev_item.startswith("ROLL : d10") and cur_item.startswith("ROLL : d2") and (not prev_item.startswith("ROLL : d10=d10(10)=10")):
-        #         content_list[i+1] = ""
+        if self.detect_d2s:
+            # ROLL : d10
+            # ROLL : d2
+            for i in range(0, len(content_list) - 1):
+                prev_item = content_list[i]
+                cur_item = content_list[i+1]
+                # 如果第i条是d10且出目不是10，同时第i+1条是d2，则删除d2
+                if prev_item.startswith("ROLL : d10") and cur_item.startswith("ROLL : d2") and (not prev_item.startswith("ROLL : d10=d10(10)=10")):
+                    content_list[i+1] = ""
 
         # 重新组合结果
         content = ""
@@ -254,9 +260,10 @@ class SaveThread:
             self.save_reading(posts, filename)
 
     # 生成文档
-    def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
+    async def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
         posts = self.get_thread_posts()
         time_suffix = time.strftime("%Y-%m-%d_%H-%M")
+        print("Start run save async")
         generated_files = []
         if save_raw:
             filename = f"{self.filename}_raw_{time_suffix}.json"
