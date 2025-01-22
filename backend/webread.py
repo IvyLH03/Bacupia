@@ -30,12 +30,21 @@ class SaveThread:
         })
         data = res.json()
         self.authorid = data['result'][0]['author']['uid']
-        self.max_page = data['totalPage']
         self.tsubject = data['tsubject']
         self.filename = self.sanitize_filename(self.tsubject)[:200]
 
+
+        res = self.client.post("https://bbs.nga.cn/app_api.php?__lib=post&__act=list", {
+            "tid":self.tid,
+            "page":1,
+            "authorid":self.authorid
+
+        })
+        data = res.json()
+        self.max_page = data['totalPage']
+
         self.debug = debug
-        self.detect_d2s = debug
+        self.detect_d2s = detect_d2s
 
 
 
@@ -260,7 +269,7 @@ class SaveThread:
             self.save_reading(posts, filename)
 
     # 生成文档
-    async def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
+    def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
         posts = self.get_thread_posts()
         time_suffix = time.strftime("%Y-%m-%d_%H-%M")
         print("Start run save async")

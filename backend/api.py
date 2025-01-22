@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, abort
+from flask import Flask, jsonify, send_from_directory, abort
 from werkzeug.utils import secure_filename, safe_join
 from webread import SaveThread
 import json
@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 import os
 import asyncio
+from tasks import run_save_task
 
 app = Flask(__name__)
 CORS(app)
@@ -16,28 +17,38 @@ CORS(app)
 def hello():
     return "hello!" 
 
-@app.route('/bacupia/request/<int:post_id>')
-async def request_backup(post_id):
+@app.route('/bacupia/request/<int:tid>')
+async def request_backup(tid):
     request_time = time.time()
-    app.logger.info(f'get file | post_id: {post_id} | {request_time} |')
+    app.logger.info(f'get file | post_id: {tid} | {request_time} |')
     try: 
-        with open('config.json') as f:
-            cookies=json.load(f)
+        # with open('config.json') as f:
+        #     cookies=json.load(f)
 
-        saver = SaveThread(post_id, cookies, debug=True)
+        # saver = SaveThread(post_id, cookies, debug=True)
         
-        # run in background
-        asyncio.create_task(saver.run_save(save_raw=False, save_minimal=False))
+        # # run in background
+        # asyncio.create_task(saver.run_save(save_raw=False, save_minimal=False))
 
-        app.logger.info(f'SUCCESS: get file | post_id: {post_id} | {request_time} |')
+        # app.logger.info(f'SUCCESS: get file | post_id: {post_id} | {request_time} |')
         # return send_from_directory(
         #     "./saves", generated_filenames[0], as_attachment=True
         # )
-        return "Successfully started"
+        result = run_save_task(tid)
+        ret = {
+            "msg": "Successfully started"
+        }
+        # ret["task"] = result.
+
+        return ret
     
     except Exception as err:
-        app.logger.info(f'FAILED: get file | post_id: {post_id} | {request_time} |')
-        print(err)
+        app.logger.info(f'FAILED: get file | post_id: {tid} | {request_time} |')
+        response = {
+            "error": "Internal Server Error",
+            "message": str(err) if str(err) else "An unexpected error occurred."
+        }
+        return jsonify(response), 500
         
     
 # return all files in save folder
