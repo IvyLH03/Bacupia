@@ -38,7 +38,6 @@ class SaveThread:
             "tid":self.tid,
             "page":1,
             "authorid":self.authorid
-
         })
         data = res.json()
         self.max_page = data['totalPage']

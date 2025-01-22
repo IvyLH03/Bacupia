@@ -34,7 +34,7 @@ async def request_backup(tid):
         # return send_from_directory(
         #     "./saves", generated_filenames[0], as_attachment=True
         # )
-        result = run_save_task(tid)
+        result = run_save_task.delay(tid)
         ret = {
             "msg": "Successfully started"
         }
