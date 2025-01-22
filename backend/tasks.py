@@ -5,9 +5,11 @@ from webread import SaveThread
 app = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
 
 def init():
-    global cookies
+    global cookies, base_path
     with open('config.json') as f:
-      cookies = json.load(f)
+      data = json.load(f)
+      cookies = data["cookies"]
+      base_path = data["basePath"]
 
 @app.task
 def add(x, y):
@@ -15,7 +17,8 @@ def add(x, y):
 
 @app.task
 def run_save_task(tid):
-  saver = SaveThread(tid, cookies, debug=True)
-  saver.run_save(save_raw=False, save_minimal=False)
+  saver = SaveThread(tid, cookies, debug=True, base_path=base_path)
+  filenames = saver.run_save(save_raw=False, save_minimal=False, filename_timestamp=False)
+  return filenames
   
 init()

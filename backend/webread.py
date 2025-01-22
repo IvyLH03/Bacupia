@@ -15,7 +15,7 @@ import asyncio
 
 class SaveThread:
 
-    def __init__(self, tid: int, cookies, debug=False, detect_d2s=False):
+    def __init__(self, tid: int, cookies, debug=False, detect_d2s=False, base_path="./"):
         self.tid = tid
 
         self.client = requests.session()
@@ -44,7 +44,9 @@ class SaveThread:
 
         self.debug = debug
         self.detect_d2s = detect_d2s
+        self.base_path = base_path
 
+        print(base_path)
 
 
     # remove invalid characters from the filename 
@@ -256,41 +258,42 @@ class SaveThread:
         return re.match('<div class=\'dice\'>(.)+</div>', content) != None
     
     # 从已有数据文件生成文档
-    def run_save_from_json(self, json_path:str, save_minimal=True, save_reading=True):
-        time_suffix = time.strftime("%Y-%m-%d_%H-%M")
+    def run_save_from_json(self, json_path:str, save_minimal=True, save_reading=True, filename_timestamp=True):
+        if filename_timestamp:
+            time_suffix = f"_{time.strftime("%Y-%m-%d_%H-%M")}"
+        else:
+            time_suffix = ""
         with open(json_path) as f:
             posts = json.load(f)
         if save_minimal:
-            filename = f"{self.filename}_minimal_{time_suffix}.docx"
+            filename = f"{self.base_path}{self.filename}_minimal{time_suffix}.docx"
             self.save_minimal(posts, filename)
         if save_reading:
-            filename = f"{self.filename}_reading_{time_suffix}.docx"
+            filename = f"{self.base_path}{self.filename}_reading{time_suffix}.docx"
             self.save_reading(posts, filename)
 
     # 生成文档
-    def run_save(self, save_raw=True, save_minimal=True, save_reading=True):
+    def run_save(self, save_raw=True, save_minimal=True, save_reading=True, filename_timestamp=True):
         posts = self.get_thread_posts()
-        time_suffix = time.strftime("%Y-%m-%d_%H-%M")
+        if filename_timestamp:
+            time_suffix = f"_{time.strftime("%Y-%m-%d_%H-%M")}"
+        else:
+            time_suffix = ""
         print("Start run save async")
         generated_files = []
         if save_raw:
-            filename = f"{self.filename}_raw_{time_suffix}.json"
+            filename = f"{self.base_path}{self.filename}_raw{time_suffix}.json"
             self.save_raw(posts, filename)
             generated_files.append(filename)
         if save_minimal:
-            filename = f"{self.filename}_minimal_{time_suffix}.docx"
+            filename = f"{self.base_path}{self.filename}_minimal{time_suffix}.docx"
             self.save_minimal(posts, filename)
             generated_files.append(filename)
         if save_reading:
-            filename = f"{self.filename}_reading_{time_suffix}.docx"
+            filename = f"{self.base_path}{self.filename}_reading{time_suffix}.docx"
             self.save_reading(posts, filename)
             generated_files.append(filename)
         return generated_files
-
-
-
-
-
 
 
 def post_time_formatted(tstamp:int) -> str:
@@ -299,7 +302,7 @@ def post_time_formatted(tstamp:int) -> str:
 
 if __name__ == "__main__":
     with open('config.json') as f:
-        cookies=json.load(f)
+        cookies=json.load(f)["cookies"]
     saver = SaveThread(40452148, cookies)
     # file_name = "./out/processed_test_0.json"
     saver.run_save()

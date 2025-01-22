@@ -22,23 +22,12 @@ async def request_backup(tid):
     request_time = time.time()
     app.logger.info(f'get file | post_id: {tid} | {request_time} |')
     try: 
-        # with open('config.json') as f:
-        #     cookies=json.load(f)
-
-        # saver = SaveThread(post_id, cookies, debug=True)
-        
-        # # run in background
-        # asyncio.create_task(saver.run_save(save_raw=False, save_minimal=False))
-
-        # app.logger.info(f'SUCCESS: get file | post_id: {post_id} | {request_time} |')
-        # return send_from_directory(
-        #     "./saves", generated_filenames[0], as_attachment=True
-        # )
         result = run_save_task.delay(tid)
         ret = {
             "msg": "Successfully started"
         }
         # ret["task"] = result.
+        result.forget() # temporary solution
 
         return ret
     
@@ -59,7 +48,10 @@ def get_archive():
     contents = list(relative_path.iterdir())
     all_filenames = []
     for file in contents:
-        all_filenames.append(file.name)
+        all_filenames.append({
+            "name": file.name,
+            "time": file.stat().st_ctime
+        })
     return all_filenames
     # get all files that are in progress
 
