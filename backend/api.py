@@ -25,6 +25,7 @@ async def request_backup(tid):
             "msg": "Successfully started",
             "task_id": task.id
         }
+
         return jsonify(ret)
     
     except Exception as err:
@@ -53,6 +54,7 @@ def get_archive():
 # check status of a task
 @app.route('/bacupia/status/<task_id>', methods=['GET'])
 def task_status(task_id):
+    print(f"task_id: {task_id}")
     task_result = AsyncResult(task_id)  # Get task by ID
     if task_result.state == "PENDING":
         response = {"state": "PENDING"}

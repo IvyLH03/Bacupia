@@ -2,6 +2,8 @@ from celery import Celery
 import json
 from webread import SaveThread
 
+DEBUG = False
+
 app = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
 
 app.conf.update(
@@ -20,7 +22,7 @@ def init():
 
 @app.task(name='tasks.run_save_task')
 def run_save_task(tid):
-  saver = SaveThread(tid, cookies, debug=True, base_path=base_path)
+  saver = SaveThread(tid, cookies, debug=DEBUG, base_path=base_path)
   filenames = saver.run_save(save_raw=False, save_minimal=False, filename_timestamp=False)
   return filenames
   
