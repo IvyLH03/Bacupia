@@ -4,12 +4,12 @@ from webread import SaveThread
 
 DEBUG = False
 
-app = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
+app = Celery('tasks', backend='redis://localhost:6379/0', broker='amqp://localhost')
 
 app.conf.update(
     task_serializer="json",
     accept_content=["json"],
-    result_backend="redis://localhost",  
+    result_backend='redis://localhost:6379/0',  
 )
 
 def init():
