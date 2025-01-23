@@ -10,6 +10,7 @@ import os
 import asyncio
 from tasks import run_save_task
 from celery.result import AsyncResult
+import redis
 
 app = Flask(__name__)
 CORS(app)
@@ -77,3 +78,15 @@ def download_file(filename):
 
     except Exception as e:
         return str(e)
+
+# check redis
+@app.route('/bacupia/check-redis', methods=['GET'])
+def check_redis():
+    try:
+        r = redis.Redis(host='localhost', port=6379, db=0)
+        if r.ping():
+            return "Redis is connected!"
+        else:
+            return "Redis is not reachable."
+    except Exception as e:
+        return f"Error: {e}"
