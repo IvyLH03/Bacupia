@@ -46,7 +46,7 @@ class SaveThread:
         self.detect_d2s = detect_d2s
         self.base_path = base_path
 
-        print(base_path)
+        # print(base_path)
 
 
     # remove invalid characters from the filename 
@@ -132,14 +132,19 @@ class SaveThread:
     
     # 保存所有回帖的json数据文件
     def save_raw(self, posts:List[object], filename:str):
-        print("saving raw to", filename, "...")
+        if self.debug:
+            print("saving raw to", filename, "...")
+
         with open(filename,"w",encoding="utf-8") as f:
             json.dump(posts, f)
-        print("raw saved!")
+
+        if self.debug: 
+            print("raw saved!")
 
     # 保存经过字符串处理的json数据文件
     def save_processed(self, posts:List[object], filename:str):
-        print("processing post string contents...")
+        if self.debug:
+            print("processing post string contents...")
         post_processed = []
 
         for post in posts:
@@ -168,7 +173,8 @@ class SaveThread:
             
     # 保存所有回帖的排版文档
     def save_minimal(self, posts:List[object], filename:str):
-        print("saving minimal to", filename, "...")
+        if self.debug:
+            print("saving minimal to", filename, "...")
         document = Document()
         style = document.styles.add_style('ThreadMinimal', WD_STYLE_TYPE.PARAGRAPH)
         paragraph_format = style.paragraph_format
@@ -181,11 +187,14 @@ class SaveThread:
                 paragraph.style = document.styles['ThreadMinimal']
         
         document.save(filename)
-        print("minimal saved!")
+
+        if self.debug:
+            print("minimal saved!")
 
     # 保存所有回帖的阅读格式文档
     def save_reading(self, posts:List[object], filename:str):
-        print("saving reading to", filename, "...")
+        if self.debug:
+            print("saving reading to", filename, "...")
         document = Document()
         style = document.styles.add_style('ThreadMinimal', WD_STYLE_TYPE.PARAGRAPH)
         paragraph_format = style.paragraph_format
@@ -223,7 +232,9 @@ class SaveThread:
             run.add_break()
             run.add_break()
         document.save(filename)
-        print("reading saved!")
+        
+        if self.debug:
+            print("reading saved!")
 
             
 
