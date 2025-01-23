@@ -11,11 +11,8 @@ def init():
       cookies = data["cookies"]
       base_path = data["basePath"]
 
-@app.task
-def add(x, y):
-    return x + y
 
-@app.task
+@app.task(name='tasks.run_save_task')
 def run_save_task(tid):
   saver = SaveThread(tid, cookies, debug=True, base_path=base_path)
   filenames = saver.run_save(save_raw=False, save_minimal=False, filename_timestamp=False)

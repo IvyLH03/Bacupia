@@ -13,10 +13,6 @@ from tasks import run_save_task
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
-def hello():
-    return "hello!" 
-
 @app.route('/bacupia/request/<int:tid>')
 async def request_backup(tid):
     request_time = time.time()

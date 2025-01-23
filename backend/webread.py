@@ -279,7 +279,6 @@ class SaveThread:
             time_suffix = f"_{time.strftime("%Y-%m-%d_%H-%M")}"
         else:
             time_suffix = ""
-        print("Start run save async")
         generated_files = []
         if save_raw:
             filename = f"{self.base_path}{self.filename}_raw{time_suffix}.json"
