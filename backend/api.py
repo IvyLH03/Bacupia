@@ -9,23 +9,23 @@ from pathlib import Path
 import os
 import asyncio
 from tasks import run_save_task
+from celery.result import AsyncResult
 
 app = Flask(__name__)
 CORS(app)
 
+# make a backup request
 @app.route('/bacupia/request/<int:tid>')
 async def request_backup(tid):
     request_time = time.time()
     app.logger.info(f'get file | post_id: {tid} | {request_time} |')
     try: 
-        result = run_save_task.delay(tid)
+        task = run_save_task.delay(tid)
         ret = {
-            "msg": "Successfully started"
+            "msg": "Successfully started",
+            "task_id": task.id
         }
-        # ret["task"] = result.
-        result.forget() # temporary solution
-
-        return ret
+        return jsonify(ret)
     
     except Exception as err:
         app.logger.info(f'FAILED: get file | post_id: {tid} | {request_time} |')
@@ -48,8 +48,22 @@ def get_archive():
             "name": file.name,
             "time": file.stat().st_ctime
         })
-    return all_filenames
-    # get all files that are in progress
+    return jsonify(all_filenames)
+    
+# check status of a task
+@app.route('/bacupia/status/<task_id>', methods=['GET'])
+def task_status(task_id):
+    task_result = AsyncResult(task_id)  # Get task by ID
+    if task_result.state == "PENDING":
+        response = {"state": "PENDING"}
+    elif task_result.state == "PROGRESS":
+        response = {"state": "PROGRESS"}
+    elif task_result.state == "SUCCESS":
+        response = {"state": "SUCCESS"}
+    else:
+        response = {"state": task_result.state}
+    return jsonify(response)
+
 
 # download a file
 @app.route('/bacupia/download/<filename>')
