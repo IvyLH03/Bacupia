@@ -11,6 +11,7 @@ import asyncio
 from tasks import run_save_task
 from celery.result import AsyncResult
 import redis
+from tasks import app as celery_app
 
 app = Flask(__name__)
 CORS(app)
@@ -58,7 +59,7 @@ def get_archive():
 @app.route('/bacupia/status/<task_id>', methods=['GET'])
 def task_status(task_id):
     print(f"task_id: {task_id}")
-    task_result = AsyncResult(task_id)  # Get task by ID
+    task_result = celery_app.AsyncResult(task_id)
     print(f"task_result: {task_result}")
     response = {"state": task_result.state}
     return jsonify(response)
