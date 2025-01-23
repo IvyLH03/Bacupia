@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 import os
 import asyncio
-from tasks import run_save_task
+from tasks import run_save_task, celery
 from celery.result import AsyncResult
 
 app = Flask(__name__)

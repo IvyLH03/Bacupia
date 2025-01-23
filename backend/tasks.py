@@ -4,9 +4,9 @@ from webread import SaveThread
 
 DEBUG = False
 
-app = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
+celery = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
 
-app.conf.update(
+celery.conf.update(
     task_serializer="json",
     accept_content=["json"],
     result_backend="redis://localhost",  
@@ -20,7 +20,7 @@ def init():
       base_path = data["basePath"]
 
 
-@app.task(name='tasks.run_save_task')
+@celery.task(name='tasks.run_save_task')
 def run_save_task(tid):
   saver = SaveThread(tid, cookies, debug=DEBUG, base_path=base_path)
   filenames = saver.run_save(save_raw=False, save_minimal=False, filename_timestamp=False)
