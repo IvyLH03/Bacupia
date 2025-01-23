@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 import os
 import asyncio
-from tasks import run_save_task, celery
+from tasks import run_save_task
 from celery.result import AsyncResult
 
 app = Flask(__name__)
@@ -25,6 +25,8 @@ async def request_backup(tid):
             "msg": "Successfully started",
             "task_id": task.id
         }
+
+        print(task.status)
 
         return jsonify(ret)
     
