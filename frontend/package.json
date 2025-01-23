@@ -2,7 +2,7 @@
   "name": "ak-backup",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://ivylh03.github.io/bacupia/",
+  "homepage": "https://ivylh03.net/bacupia/",
   "type": "module",
   "scripts": {
     "dev": "vite",
