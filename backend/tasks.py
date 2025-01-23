@@ -4,6 +4,12 @@ from webread import SaveThread
 
 app = Celery('tasks', backend='redis://localhost', broker='amqp://localhost')
 
+Celery.conf.update(
+    task_serializer="json",
+    accept_content=["json"],
+    result_backend="redis://localhost",  
+)
+
 def init():
     global cookies, base_path
     with open('config.json') as f:
