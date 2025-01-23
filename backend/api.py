@@ -56,16 +56,9 @@ def get_archive():
 def task_status(task_id):
     print(f"task_id: {task_id}")
     task_result = AsyncResult(task_id)  # Get task by ID
-    if task_result.state == "PENDING":
-        response = {"state": "PENDING"}
-    elif task_result.state == "PROGRESS":
-        response = {"state": "PROGRESS"}
-    elif task_result.state == "SUCCESS":
-        response = {"state": "SUCCESS"}
-    else:
-        response = {"state": task_result.state}
+    print(f"task_result: {task_result}")
+    response = {"state": task_result.state}
     return jsonify(response)
-
 
 # download a file
 @app.route('/bacupia/download/<filename>')
