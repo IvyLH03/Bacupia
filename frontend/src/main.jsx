@@ -4,7 +4,7 @@ import './index.css'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 
-const router = createRouter({ routeTree, basepath:"/bacupia" })
+const router = createRouter({ routeTree, basepath:"/" })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

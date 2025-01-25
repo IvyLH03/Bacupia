@@ -8,5 +8,5 @@ export default defineConfig({
     TanStackRouterVite(),
     viteReact()
   ],
-  base: "/bacupia/"
+  base: "/"
 })
